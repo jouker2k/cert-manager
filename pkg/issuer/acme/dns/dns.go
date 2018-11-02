@@ -19,6 +19,7 @@ package dns
 import (
 	"context"
 	"fmt"
+	"github.com/jetstack/cert-manager/pkg/issuer/acme/dns/rdns"
 	"strings"
 	"time"
 
@@ -58,6 +59,7 @@ type dnsProviderConstructors struct {
 	azureDNS   func(clientID, clientSecret, subscriptionID, tenentID, resourceGroupName, hostedZoneName string, dns01Nameservers []string) (*azuredns.DNSProvider, error)
 	acmeDNS    func(host string, accountJson []byte, dns01Nameservers []string) (*acmedns.DNSProvider, error)
 	rfc2136    func(nameserver, tsigAlgorithm, tsigKeyName, tsigSecret string, dns01Nameservers []string) (*rfc2136.DNSProvider, error)
+	rDns       func(apiUrl, token string) (*rdns.DNSProvider, error)
 }
 
 // Solver is a solver for the acme dns01 challenge.
@@ -298,6 +300,19 @@ func (s *Solver) solverForChallenge(issuer v1alpha1.GenericIssuer, ch *v1alpha1.
 		if err != nil {
 			return nil, fmt.Errorf("error instantiating rfc2136 challenge solver: %s", err.Error())
 		}
+	case providerConfig.RDNS != nil:
+		rdnsSecret, err := s.secretLister.Secrets(resourceNamespace).Get(providerConfig.RDNS.ClientToken.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error getting rdns token: %s", err.Error())
+		}
+		data, ok := rdnsSecret.Data[providerConfig.RDNS.ClientToken.Key]
+		if !ok {
+			return nil, fmt.Errorf("error getting rdns secret key: key '%s' not found in secret", providerConfig.RDNS.ClientToken.Key)
+		}
+		impl, err = s.dnsProviderConstructors.rDns(providerConfig.RDNS.APIEndpoint, string(data))
+		if err != nil {
+			return nil, fmt.Errorf("error instantiating rdns challenge solver: %s", err.Error())
+		}
 	default:
 		return nil, fmt.Errorf("no dns provider config specified for provider %q", providerName)
 	}
@@ -318,6 +333,7 @@ func NewSolver(ctx *controller.Context) *Solver {
 			azuredns.NewDNSProviderCredentials,
 			acmedns.NewDNSProviderHostBytes,
 			rfc2136.NewDNSProviderCredentials,
+			rdns.NewDNSProvider,
 		},
 	}
 }

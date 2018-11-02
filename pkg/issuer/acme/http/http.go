@@ -90,12 +90,11 @@ func NewSolver(ctx *controller.Context) *Solver {
 // will return nil (i.e. this function is idempotent).
 func (s *Solver) Present(ctx context.Context, issuer v1alpha1.GenericIssuer, ch *v1alpha1.Challenge) error {
 	_, podErr := s.ensurePod(ch)
-	svc, svcErr := s.ensureService(issuer, ch)
+	_, svcErr := s.ensureService(issuer, ch)
 	if svcErr != nil {
 		return utilerrors.NewAggregate([]error{podErr, svcErr})
 	}
-	_, ingressErr := s.ensureIngress(ch, svc.Name)
-	return utilerrors.NewAggregate([]error{podErr, svcErr, ingressErr})
+	return utilerrors.NewAggregate([]error{podErr, svcErr})
 }
 
 func (s *Solver) Check(ch *v1alpha1.Challenge) (bool, error) {

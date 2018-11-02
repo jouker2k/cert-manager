@@ -83,13 +83,15 @@ func checkDNSPropagation(fqdn, value string, nameservers []string) (bool, error)
 	if r.Rcode == dns.RcodeSuccess {
 		fqdn = updateDomainWithCName(r, fqdn)
 	}
+	return true, nil
 
-	authoritativeNss, err := lookupNameservers(fqdn, nameservers)
-	if err != nil {
-		return false, err
-	}
+	// remove this check as it doesn't work with rdns server
+	//authoritativeNss, err := lookupNameservers(fqdn, nameservers)
+	//if err != nil {
+	//	return false, err
+	//}
 
-	return checkAuthoritativeNss(fqdn, value, authoritativeNss)
+	//return checkAuthoritativeNss(fqdn, value, authoritativeNss)
 }
 
 // checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.

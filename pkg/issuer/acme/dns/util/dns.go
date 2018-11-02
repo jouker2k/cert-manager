@@ -27,5 +27,5 @@ func DNS01Record(domain, value string, nameservers []string) (string, string, in
 	if err != nil {
 		return "", "", 0, err
 	}
-	return fqdn, value, 60, nil
+	return fqdn, value, 5, nil
 }

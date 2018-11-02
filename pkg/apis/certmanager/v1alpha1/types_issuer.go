@@ -162,6 +162,12 @@ type ACMEIssuerDNS01Provider struct {
 	AzureDNS   *ACMEIssuerDNS01ProviderAzureDNS   `json:"azuredns,omitempty"`
 	AcmeDNS    *ACMEIssuerDNS01ProviderAcmeDNS    `json:"acmedns,omitempty"`
 	RFC2136    *ACMEIssuerDNS01ProviderRFC2136    `json:"rfc2136,omitempty"`
+	RDNS       *ACMEIssuerDNS01ProviderRDNS       `json:"rdns,omitempty"`
+}
+
+type ACMEIssuerDNS01ProviderRDNS struct {
+	APIEndpoint string            `json:"apiEndpoint"`
+	ClientToken SecretKeySelector `json:"clientTokenSecretRef"`
 }
 
 // ACMEIssuerDNS01ProviderAkamai is a structure containing the DNS

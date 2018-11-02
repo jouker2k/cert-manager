@@ -63,6 +63,7 @@ filegroup(
         "//pkg/issuer/acme/dns/azuredns:all-srcs",
         "//pkg/issuer/acme/dns/clouddns:all-srcs",
         "//pkg/issuer/acme/dns/cloudflare:all-srcs",
+        "//pkg/issuer/acme/dns/rdns:all-srcs",
         "//pkg/issuer/acme/dns/rfc2136:all-srcs",
         "//pkg/issuer/acme/dns/route53:all-srcs",
         "//pkg/issuer/acme/dns/util:all-srcs",
