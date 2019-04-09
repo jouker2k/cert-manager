@@ -22,15 +22,14 @@ import (
 	"reflect"
 	"strings"
 
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/validation/field"
-
 	cmacme "github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha2"
 	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"github.com/jetstack/cert-manager/pkg/internal/apis/certmanager/validation/util"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 // Validation functions for cert-manager v1alpha2 Issuer types
@@ -377,6 +376,16 @@ func ValidateACMEChallengeSolverDNS01(p *cmacme.ACMEChallengeSolverDNS01, fldPat
 				el = append(el, field.Required(fldPath.Child("webhook", "solverName"), "solver name must be specified"))
 			}
 		}
+	}
+	if p.RDNS != nil {
+		if numProviders > 0 {
+			el = append(el, field.Forbidden(fldPath.Child("rdns"), "may not specify more than one provider type"))
+		}
+		numProviders++
+		if p.RDNS.APIEndpoint == "" {
+			el = append(el, field.Required(fldPath.Child("rdns", "apiEndpoint"), "rdns server api endpoint must be configured"))
+		}
+		el = append(el, ValidateSecretKeySelector(&p.RDNS.ClientToken, fldPath.Child("rdns", "clientToken"))...)
 	}
 	if numProviders == 0 {
 		el = append(el, field.Required(fldPath, "no DNS01 provider configured"))
