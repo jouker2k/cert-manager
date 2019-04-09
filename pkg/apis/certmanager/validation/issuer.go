@@ -312,6 +312,16 @@ func ValidateACMEIssuerDNS01Config(iss *v1alpha1.ACMEIssuerDNS01Config, fldPath 
 				}
 			}
 		}
+		if p.RDNS != nil {
+			if numProviders > 0 {
+				el = append(el, field.Forbidden(fldPath.Child("rdns"), "may not specify more than one provider type"))
+			}
+			numProviders++
+			if p.RDNS.APIEndpoint == "" {
+				el = append(el, field.Required(fldPath.Child("rdns", "apiEndpoint"), "rdns server api endpoint must be configured"))
+			}
+			el = append(el, ValidateSecretKeySelector(&p.RDNS.ClientToken, fldPath.Child("rdns", "clientToken"))...)
+		}
 		if numProviders == 0 {
 			el = append(el, field.Required(fldPath, "at least one provider must be configured"))
 		}
