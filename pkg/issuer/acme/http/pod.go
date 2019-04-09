@@ -125,9 +125,9 @@ func (s *Solver) buildPod(ch *v1alpha1.Challenge) *corev1.Pod {
 	podLabels := podLabels(ch)
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "cm-acme-http-solver-",
-			Namespace:    ch.Namespace,
-			Labels:       podLabels,
+			Name:      fmt.Sprintf("cm-acme-http-solver-%d", adler32.Checksum([]byte(ch.Spec.DNSName))),
+			Namespace: ch.Namespace,
+			Labels:    podLabels,
 			Annotations: map[string]string{
 				"sidecar.istio.io/inject": "false",
 			},
